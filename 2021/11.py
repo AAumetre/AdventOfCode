@@ -58,6 +58,4 @@ def main():
     print(f"There has been {flash} flashes")
 
 
-
-if __name__ == "__main__":
-    main()
+main()
