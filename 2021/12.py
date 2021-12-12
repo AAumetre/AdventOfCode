@@ -14,6 +14,29 @@ def find_path(path, neighbors, paths_found):
             find_path(possible_path, neighbors, paths_found)
     return paths_found
 
+def find_path2(path, neighbors, paths_found, joker_used):
+    current_node = path[-1]
+    for n in neighbors[current_node]:
+        if n == "end":
+            path.append(n)
+            paths_found.append( path )
+            continue
+        if n.islower() and n in path:
+            if joker_used:
+                continue # small cave already visited
+            else:
+                if n == "start":
+                    continue # start cannot be jokerised
+                else:
+                    possible_path = path.copy()
+                    possible_path.append(n)
+                    find_path2(possible_path, neighbors, paths_found, True)
+        else:
+            possible_path = path.copy()
+            possible_path.append(n)
+            find_path2(possible_path, neighbors, paths_found, joker_used)
+    return paths_found
+
 def main():
     links = []
     for line in open("12.in", "r"):
@@ -31,6 +54,7 @@ def main():
             neighbors[ link[1] ].append( link[0] )
 
     print( len(find_path(["start"], neighbors, [])) )
+    print( len(find_path2(["start"], neighbors, [], False)) )
 
 
 main()
