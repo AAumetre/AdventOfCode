@@ -1,9 +1,11 @@
 from typing import List
 from typing import Callable
+from typing import Tuple
 import functools
 from numpy import array
 from numpy.linalg import norm
 import itertools
+import copy
 
 def read_file(filename: str) -> List:
     """ Returns a list of the lines in the file """
@@ -78,4 +80,28 @@ def get_neigh(i: int, j: int, I: int, J: int) -> List[List[int]]:
 	if j+1 < J:
 		neighbors.append( [i, j+1] )
 	return neighbors
-	
+
+def get_triplet_idxs(size: int) -> List[List[int]]:
+	triplet_idxs = []
+	idx_p = [0,0,0]
+	while idx_p[0] < size:
+		idx_p[1] = idx_p[0] + 1
+		while idx_p[1] < size:
+			idx_p[2] = idx_p[1] + 1
+			while idx_p[2] < size:
+				triplet_idxs.append( idx_p.copy() )
+				idx_p[2] += 1
+			idx_p[1] += 1
+		idx_p[0] += 1
+	return triplet_idxs
+
+def get_duet_idxs(size: int) -> List[List[int]]:
+	duet_idxs = []
+	idx_p = [0,0]
+	while idx_p[0] < size:
+		idx_p[1] = idx_p[0] + 1
+		while idx_p[1] < size:
+			duet_idxs.append( idx_p.copy() )
+			idx_p[1] += 1
+		idx_p[0] += 1
+	return duet_idxs
