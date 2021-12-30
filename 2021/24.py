@@ -52,12 +52,13 @@ def get_plausible(seed: str, a, b, c) -> Tuple[str,bool]:
     z2 = 26*z1 + w[1] + c[1]
     z3 = 26*z2 + w[2] + c[2]
     z4 = 26*z3 + w[3] + c[3]
+    z7 = 26*z2 + w[6] + c[6]
+    z9 = 26*z2 + w[8] + c[8]
     z11= 26*z2 + w[10] + c[10]
     w[4] = z4%26 + b[4]
     w[5] = z3%26 + b[5]
-    z7 = 26*z2 + w[5] + c[5]
     w[7] = z7%26 + b[7]
-    w[9] = z3%26 + b[9]
+    w[9] = z9%26 + b[9]
     w[11]= z11%26+ b[11]
     w[12]= z2%26 + b[12]
     w[13]= z1%26 + b[13]
@@ -67,13 +68,21 @@ def get_plausible(seed: str, a, b, c) -> Tuple[str,bool]:
             return "", False
         w_string += str(e)
     return w_string, True
-    
-        
-def f(w, z, a, b, c) -> int:
-    if (z%26+b) == w:
-        return z//a
-    else:
-        return 26*(z//a)+w+c
+
+def MONAD(model_number: str, A, B, C) -> Tuple[int,bool]:
+    z = 0
+    for i in range(len(A)):
+        w = int(model_number[i])
+        division = (z%26+B[i]==w)
+        if A[i] == 26 and division:
+            new_z = z // 26
+        elif A[i] == 1 and not division:
+            new_z = 26*z + w + C[i]
+        else:
+            return z, False
+        #print(f"\tz_{i}=%12d\tw_{i}={w}\ta_{i}={A[i]}\tb_{i}={B[i]}\tc_{i}={C[i]} \t=> z_{i+1}={new_z}" %(z))                
+        z = new_z
+    return z, z==0
 
 def main():
     data = read_file("24.in")
@@ -91,36 +100,30 @@ def main():
     print(f"B = {B}")
     print(f"C = {C}")
     
-    w_seed = "9"*7
-    # w_seed = "7"*7
-    # w_seed = "8191111"
-    # 81914571491381 - too high
+    w_seed = "1"*7
     cnt = 0
+    finished = False
+    valid = []
     while True:
         plausible = False
         while not plausible:
-            w_seed = get_prev(w_seed, 6) # part 1
-            # w_seed = get_next(w_seed, 6) # part 2
+            w_seed = get_next(w_seed, 6)
+            if w_seed == "9"*7:
+                finished = True
+                break
             model_number, plausible = get_plausible(w_seed, A, B ,C)
             cnt += 1
-            if cnt%10000 == 0:
+            if cnt%500000 == 0:
                 print(f"Testing with seed: {w_seed}")
-
-        z = 0
-        increase_count = 0
-        print(f"Testing with model number: {model_number}")
-        for i in range(len(A)):
-            w = int(model_number[i])
-            new_z = f(w, z, A[i], B[i], C[i])
-            print(f"\tz_{i}={z}\tw_{i}={w}\ta_{i}={A[i]}\tb_{i}={B[i]}\tc_{i}={C[i]} \t=> z_{i+1}={new_z}")                
-            if new_z > z:
-                increase_count += 1
-                if increase_count > 7:
-                    break
-            z = new_z
-        if z == 0:
-            print(f"New model number found! {model_number}")
+        if finished:
             break
+        
+        z, success = MONAD(model_number, A, B, C)
+        if success:
+            valid.append( int(model_number) )
+
+    print(f"Max value: {max(valid)}")
+    print(f"Min value: {min(valid)}")
 
 
 main()
