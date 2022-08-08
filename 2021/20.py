@@ -1,74 +1,76 @@
 from functions import *
-from typing import Dict
 
-Image = List[str]
+Picture = List[str]
 
-def get_enhanced(algo: str) -> Dict[str, str]:
-	""" From the 'algorithm', builds a dict returning the new pixel,
-		based on its surroundings """
-	table = {}
-	for i in range(2**9):
-		i_str = bin(i)[2:].zfill(9).replace("0", ".").replace("1", "#")
-		table[i_str] = algo[i]
-	return table
-	
-def widen(image: Image, char: str) -> Image:
-	""" Adds characters around an image """
-	top_line = char*(len(image[0])+4)
-	new_image = [top_line, top_line]
-	for line in image:
-		new_line = char + char + line + char + char
-		new_image.append(new_line)
-	new_image.append(top_line)
-	new_image.append(top_line)
-	return new_image
+def get_three_lines(i: int, j:int, I: int, J:int) -> List[List[int]]:
+    """ Format is [j, i-start, i-end] """
+    three_lines = []
+    if j-1 >= 0:
+        line1 = [j-1, i, i+1]
+        if i-1 >= 0:
+            line1[1] = i-1
+        if i+1 >= I:
+            line1[2] = i
+        three_lines.append(line1)
+    line2 =  [j, i, i+1]
+    if i-1 >= 0:
+        line2[1] = i-1
+    if i+1 >= I:
+        line2[2] = i
+    three_lines.append(line2)
+    if j+1 < J:
+        line3 =  [j+1, i, i+1]
+        if i-1 >= 0:
+            line3[1] = i-1
+        if i+1 >= I:
+            line3[2] = i
+        three_lines.append(line3)
+    return three_lines
 
-def extract(image: Image, pi: int, pj: int) -> str:
-	""" Extract the 'pixels' surrounding an (i,j) pixel.
-		!!! Does not do boundary checks !!! """
-	line = ""
-	for j in [pj-1, pj, pj+1]:
-		line += image[j][pi-1:pi+2]
-	return line
+def create_empty_picture(I: int, J: int) -> Picture:
+    new_pic = []
+    line = []
+    for i in range(I):
+        line.append(".")
+    for j in range(J):
+        new_pic.append(line)
+    return new_pic
 
-def render(image: Image) -> str:
-	""" Creates one string to be printed """
-	ret = ""
-	for j in range(len(image)):
-		ret += "\n"
-		for i in range(len(image[0])):
-			ret += image[j][i]
-	ret += "\n"
-	return ret
+def enhance(pic: Picture, algo: str) -> Picture:
+    J = len(pic)
+    I = len(pic[0])
+    new_pic = create_empty_picture(I, J)
+    for j in range(J):
+        for i in range(I):
+            number_str = ""
+            for l in get_three_lines(i, j, I, J):
+                number_str +=  pic[l[0]][l[1]:l[2]+1]
+            number_str = number_str.replace("#", "1")
+            number_str = number_str.replace(".", "0")
+            index = int(number_str,2)
+            new_pic[j][i] = algo[index]
+    return pic
 
-def main(n_repeats: int):
-	data = read_file("20.in")
-	algo = data[0]
-	image_str = data[2:]
-	image = []
-	for line in image_str:
-		image.append(line)
-	
-	table = get_enhanced(algo)
-	
-	inf_char = "."
-	for _ in range(n_repeats):
-		image = widen(image, inf_char)
-		new_image = []
-		for j in range(1, len(image)-1):
-			line = ""
-			for i in range(1, len(image[0])-1):
-				new_char = table[extract(image, i, j)]
-				line += new_char
-			new_image.append(line)
-		image = new_image
-		inf_char = table[inf_char*9]
 
-	counter = 0
-	for j in range(len(image)):
-		for i in range(len(image[0])):
-			if image[j][i] == "#": counter += 1
-	print(counter)
 
-main(2)
-main(50)
+
+
+def print_picture(pic: Picture) -> None:
+    for l in pic:
+        print(l)
+
+def main():
+    data = read_file("20.ex")
+    algorithm = data[0]
+    picture = []
+    for line in data[2:]:
+        picture.append(line)
+
+    print_picture(picture)
+    picture = enhance(picture, algorithm)
+    print_picture(picture)
+
+
+
+
+main()

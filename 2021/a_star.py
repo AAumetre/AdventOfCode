@@ -1,7 +1,6 @@
 from typing import List
 from typing import Callable
 import heapq
-import copy
 
 class Node:
 	def __init__(self, state, cost: float):
