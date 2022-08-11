@@ -12,7 +12,7 @@ def render(cucumbers) -> str:
     return ret
 
 def main():
-    data = read_file("25.in")
+    data = read_file("data/25.in")
     cucumbers = {}
     for j in range(len(data)):
         cucumbers[j] = {}

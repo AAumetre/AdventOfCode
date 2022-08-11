@@ -60,7 +60,7 @@ def print_picture(pic: Picture) -> None:
         print(l)
 
 def main():
-    data = read_file("20.ex")
+    data = read_file("data/20.ex")
     algorithm = data[0]
     picture = []
     for line in data[2:]:

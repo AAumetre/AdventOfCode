@@ -193,7 +193,7 @@ def magnitude(top: 'Node') -> int:
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    data = read_file("18.in")
+    data = read_file("data/18.in")
     numbers = [eval(e) for e in data]
     start = Node(numbers[0])
 
