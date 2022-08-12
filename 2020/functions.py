@@ -11,6 +11,7 @@ import logging
 import functools
 import itertools
 import copy
+import re
 import math
 from operator import mul
 from collections import defaultdict
@@ -59,4 +60,25 @@ def get_neighbor_indexes_euclidian(data: List, i: int, j: int) -> List[Tuple[int
     if plusJ and minusI: indexes.append((i - 1, j + 1))
     if plusJ: indexes.append((i, j + 1))
     if plusJ and plusI: indexes.append((i + 1, j + 1))
+    return indexes
+    
+def get_neighbor_indexes_euclidian3(point: Tuple[int, int, int]) -> List[Tuple[int, int, int]]:
+    """ Returns the list of neighbors, at Euclidian distance of 1, in 3 dimensions. """
+    indexes = []
+    for i in [-1, 0, 1]:
+        for j in [-1, 0, 1]:
+            for k in [-1, 0, 1]:
+               indexes.append((point[0]+i, point[1]+j, point[2]+k))
+    indexes.remove((point[0], point[1], point[2]))
+    return indexes
+    
+def get_neighbor_indexes_euclidian4(point: Tuple[int, int, int, int]) -> List[Tuple[int, int, int, int]]:
+    """ Returns the list of neighbors, at Euclidian distance of 1, in 4 dimensions. """
+    indexes = []
+    for i in [-1, 0, 1]:
+        for j in [-1, 0, 1]:
+            for k in [-1, 0, 1]:
+            	for l in [-1, 0, 1]:
+               		indexes.append((point[0]+i, point[1]+j, point[2]+k, point[3]+l))
+    indexes.remove((point[0], point[1], point[2], point[3]))
     return indexes
