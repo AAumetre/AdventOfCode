@@ -2,6 +2,8 @@ from typing import TypeVar
 from functions import *
 
 Cup = TypeVar("Cup")
+
+
 @dataclass()
 class Cup:
     """ A cup is either a single cup, or a range of consecutive cups. """
@@ -11,105 +13,119 @@ class Cup:
 
 
 class CupCircle:
-
-    def __init__(self, selected_idx_: int, cups_: List[int]):
-        self.cups_ = cups_.copy()
-        self.selected_idx_ = selected_idx_
-        self.selected_ = self.cups_[self.selected_idx_]
-        self.destination_ = 0
+    def __init__(self, cups_: Cup):
+        self.dest_ = None
+        self.selected_ = cups_
+        self.picked_up_ = [None]*3
 
     def __repr__(self) -> str:
-        rp = ""
-        for i, c in enumerate(self.cups_):
-            if i == self.selected_idx_:
-                rp += f" ({c})"
-            else:
-                rp += f" {c}"
-        rp += f"   => {self.destination_}"
+        rp = f"({self.selected_.ID_})"
+        n = self.selected_.next_
+        while n != self.selected_:
+            rp += f" {n.ID_}"
+            n = n.next_
+        rp += f"   => {self.dest_}"
         return rp
 
-    def pop_next(self) -> int:
-        """ Pops the first cup, clockwise of the selected one. """
-        next_cup_i = 0
-        if self.selected_idx_ + 1 < len(self.cups_):
-            next_cup_i = self.selected_idx_ + 1
-        next_cup = self.cups_[next_cup_i]
-        self.cups_.remove(next_cup)
-        return next_cup
+    def pick_up(self):
+        """ Picks-up the next three cups after selected. """
+        c = self.selected_
+        for i in range(3):
+            c = c.next_
+            self.picked_up_[i] = c
+        self.selected_.next_ = self.picked_up_[2].next_
+        self.picked_up_[2].next_ = None # precaution
 
     def find_destination(self):
         """ Finds the destination cup. """
-        if self.selected_ == min(self.cups_):
-            label = max(self.cups_)
-        else:
-            label = self.selected_ - 1
-            while label not in self.cups_:
-                label -= 1
-        self.destination_ = label
+        dest_id = self.selected_.ID_ - 1
+        found = False
+        while not found:
+            # check for lower-bound
+            if dest_id < 1:
+                # look for the highest cup ID
+                highest = Cup(0, None, False)
+                n = self.selected_.next_
+                while n != self.selected_:
+                    if n.ID_ > highest.ID_:
+                        highest = n
+                    n = n.next_
+                self.dest_ = highest
+                found = True
+            else:
+                # check if it was not picked up
+                dest_is_picked_up = False
+                for c in self.picked_up_:
+                    if c.ID_ == dest_id:
+                        dest_is_picked_up = True
+                        break
+                # look for dest_id in remaining cups, we know it's there
+                if not dest_is_picked_up:
+                    n = self.selected_.next_
+                    while True:
+                        if n.ID_ == dest_id:
+                            self.dest_ = n
+                            found = True
+                            break
+                        n = n.next_
+            dest_id -= 1
 
-    def insert_cups(self, cups_: List[int]):
+    def insert_picked(self):
         """ Inserts cups after the destination cup. """
-        target_idx = self.cups_.index(self.destination_)
-        first = self.cups_[:target_idx+1]
-        third = self.cups_[target_idx+1:]
-        self.cups_ = first + cups_ + third
+        after_dest = self.dest_.next_
+        self.dest_.next_ = self.picked_up_[0]
+        self.picked_up_[2].next_ = after_dest
 
     def select_next(self):
-        self.selected_idx_ = self.cups_.index(self.selected_) + 1
-        if self.selected_idx_ == len(self.cups_):
-            self.selected_idx_ = 0
-        self.selected_ = self.cups_[self.selected_idx_]
+        """ Selects the 'next' cup to play. """
+        self.selected_ = self.selected_.next_
 
     def get_simple_rpr(self) -> str:
+        """ Shows the 8 cups after the one numbered 1. """
         rp = ""
-        idx = self.cups_.index(1)
-        while len(rp) < len(self.cups_)-1:
-            if idx + 1 < len(self.cups_):
-                idx += 1
-            else:
-                idx = 0
-            rp += str(self.cups_[idx])
+        # find cup number 1
+        start = self.selected_
+        while start.ID_ != 1:
+            start = start.next_
+        for i in range(8):
+            start = start.next_
+            rp += str(start.ID_)
         return rp
-
-    def get_product(self) -> int:
-        idx = self.cups_.index(1)
-        prod = 1
-        to_find = 2
-        while to_find > 0:
-            if idx + 1 < len(self.cups_):
-                idx += 1
-                prod *= self.cups_[idx]
-                to_find -= 1
-            else:
-                idx = 0
-        return prod
 
 
 def play_round(cups_: CupCircle) -> CupCircle:
-    next_three = [cups_.pop_next() for i in range(3)]
+    cups_.pick_up()
     cups_.find_destination()
-    cups_.insert_cups(next_three)
+    cups_.insert_picked()
     cups_.select_next()
-    print(cups_.cups_[:20], cups_.cups_[1000000-15:])
     return cups_
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
     input = [3, 8, 9, 1, 2, 5, 4, 6, 7]
-    # input = [1, 2, 3, 4, 8, 7, 5, 9, 6]
-    cups = CupCircle(0, input)  # example
-    cups = CupCircle(0, input)  # my input
+    input = [1, 2, 3, 4, 8, 7, 5, 9, 6]
+    # initialize cups
+    first_cup = Cup(input[0], None, False)
+    prev = first_cup
+    for c in input[1:]:
+        new_cup = Cup(c, None, False)
+        prev.next_ = new_cup
+        prev = new_cup
+    prev.next_ = first_cup
 
-   #for i in range(100):
-    #    cups = play_round(cups)
+    cups = CupCircle(first_cup)
+
+    for i in range(100):
+        cups = play_round(cups)
     logging.info(f"The labels on cups after 1, after 100 moves is {cups.get_simple_rpr()}.")
+    return
 
     input = input + [i for i in range(10, 1000000-8)]
     cups = CupCircle(0, input)
     for i in range(4):
         cups = play_round(cups)
-    logging.info(f"The product of labels of the two cups after 1, after 100000000 moves, is {cups.get_product()}.")
+    logging.info(f"The product of labels of the two cups after 1, after 100000000 moves, is {cups.get_simple_rpr()}.")
     # (3)8 9 1 2 5 4 6 7    10    999991   => 2
     #  3(2)8 9 1 5 4 6 7    10    999991   => 7
     #  3 2(5)4 6 7     10    999991 8 9 1  => 3
