@@ -1,10 +1,19 @@
+from typing import TypeVar
 from functions import *
+
+Cup = TypeVar("Cup")
+@dataclass()
+class Cup:
+    """ A cup is either a single cup, or a range of consecutive cups. """
+    ID_: int
+    next_: Cup
+    is_range_: bool
 
 
 class CupCircle:
 
     def __init__(self, selected_idx_: int, cups_: List[int]):
-        self.cups_ = cups_
+        self.cups_ = cups_.copy()
         self.selected_idx_ = selected_idx_
         self.selected_ = self.cups_[self.selected_idx_]
         self.destination_ = 0
@@ -62,23 +71,53 @@ class CupCircle:
             rp += str(self.cups_[idx])
         return rp
 
+    def get_product(self) -> int:
+        idx = self.cups_.index(1)
+        prod = 1
+        to_find = 2
+        while to_find > 0:
+            if idx + 1 < len(self.cups_):
+                idx += 1
+                prod *= self.cups_[idx]
+                to_find -= 1
+            else:
+                idx = 0
+        return prod
+
 
 def play_round(cups_: CupCircle) -> CupCircle:
     next_three = [cups_.pop_next() for i in range(3)]
     cups_.find_destination()
     cups_.insert_cups(next_three)
     cups_.select_next()
+    print(cups_.cups_[:20], cups_.cups_[1000000-15:])
     return cups_
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    cups = CupCircle(0, [3, 8, 9, 1, 2, 5, 4, 6, 7])  # example
-    cups = CupCircle(0, [1, 2, 3, 4, 8, 7, 5, 9, 6])  # my input
+    input = [3, 8, 9, 1, 2, 5, 4, 6, 7]
+    # input = [1, 2, 3, 4, 8, 7, 5, 9, 6]
+    cups = CupCircle(0, input)  # example
+    cups = CupCircle(0, input)  # my input
 
-    for i in range(100):
-        cups = play_round(cups)
+   #for i in range(100):
+    #    cups = play_round(cups)
     logging.info(f"The labels on cups after 1, after 100 moves is {cups.get_simple_rpr()}.")
+
+    input = input + [i for i in range(10, 1000000-8)]
+    cups = CupCircle(0, input)
+    for i in range(4):
+        cups = play_round(cups)
+    logging.info(f"The product of labels of the two cups after 1, after 100000000 moves, is {cups.get_product()}.")
+    # (3)8 9 1 2 5 4 6 7    10    999991   => 2
+    #  3(2)8 9 1 5 4 6 7    10    999991   => 7
+    #  3 2(5)4 6 7     10    999991 8 9 1  => 3
+    #  3 4 6 7 2 5    (10)    999991 8 9 1   => 7
+    #  3 4 6 7 2 5     10 (14)   999991 8 9 11 12 13 1  => 11 ...
+
+    # 1->2   2->3   3->4   4->x    x->999    999->1
+
 
 
 start_time = time.time_ns()
