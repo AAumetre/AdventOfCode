@@ -12,8 +12,7 @@ def main():
     data = read_file("data/03.in")
     items_sum = 0
     for line in data:
-        left_side = set(line[:len(line)//2])
-        right_side = set(line[len(line)//2:])
+        left_side, right_side = set(line[:len(line)//2]), set(line[len(line)//2:])
         items_sum += priority(left_side.intersection(right_side).pop())
     logging.info(f"The sum of priorities is {items_sum}.")
 
