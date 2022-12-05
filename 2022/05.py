@@ -21,14 +21,6 @@ def parse_stacks(line_: str, docks_: Docks) -> None:
         index += 4
 
 
-def parse_move(line_: str, moves_: List[Move]) -> None:
-    """ Reads a move-line and updates the moves list with the new move. """
-    line_ = line_[5:]  # remove "move "
-    _qty = int(line_.split(" from ")[0])
-    [_from, _to] = [int(e) for e in line_.split(" from ")[1].split(" to ")]
-    moves_.append(Move(_qty, _from, _to))
-
-
 def do_move(docks_: Docks, move_: Move, version_: int) -> None:
     """ Performs a move on the docks. """
     if version_ == 9000:
@@ -58,7 +50,8 @@ def main():
             if "[" in line:
                 parse_stacks(line, docks)
             elif line[0] == "m":
-                parse_move(line, moves)
+                split_line = line.split()
+                moves.append(Move(int(split_line[1]), int(split_line[3]), int(split_line[5])))
     same_docks = copy.deepcopy(docks)
     # simulate the moves with CrateMover 9000
     for move in moves:
