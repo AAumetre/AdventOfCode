@@ -11,12 +11,13 @@ class Monkey:
     destination_: Tuple[int, int]
     inspections_: int
 
-    def take_turn(self, others_: Dict[int, Monkey], stress_reducer_: int, mod_all_: int):
+    def take_turn(self, others_: Dict[int, Monkey], stress_reducer_: int, mod_all_: int) -> None:
+        """ Computes a monkey turn and updates pther monkeys. """
         self.inspections_ += len(self.items_)
-        while self.items_ != []:
+        while self.items_:
             item = self.items_.pop(0)
             item = eval(self.op_, {"old": item})
-            item = int(item/stress_reducer_)
+            item = item//stress_reducer_
             if item % self.mod_ == 0:
                 dest_monkey = others_[self.destination_[0]]
             else:
@@ -52,7 +53,6 @@ def main():
     for i in range(20):
         for monkey in monkeys:
             monkeys[monkey].take_turn(monkeys, 3, 1)
-
     insp = sorted([m.inspections_ for m in monkeys.values()])
     logging.info(f"The level of monkey business is {insp[-2] * insp[-1]}.")
 
