@@ -5,6 +5,7 @@ from typing import Callable
 from typing import Tuple
 from typing import Set
 import typing
+import collections
 import builtins
 import logging
 import string
@@ -12,6 +13,7 @@ import logging
 import functools
 import itertools
 import copy
+import sys
 import re
 import math
 from operator import mul
@@ -34,17 +36,17 @@ def read_file(filename: str) -> List[str]:
         exit(1)
 
 
-def get_neighbor_indexes_manhattan(i: int, j: int, I: int, J: int) -> List[List[int]]:
+def get_neighbor_indexes_manhattan(i: int, j: int, I: int, J: int) -> List[Tuple[int, int]]:
     """ Returns the list of the valid neighbors' indexes r=1, diagonals excluded"""
     neighbors = []
     if i - 1 >= 0:
-        neighbors.append([i - 1, j])
+        neighbors.append((i - 1, j))
     if i + 1 < I:
-        neighbors.append([i + 1, j])
+        neighbors.append((i + 1, j))
     if j - 1 >= 0:
-        neighbors.append([i, j - 1])
+        neighbors.append((i, j - 1))
     if j + 1 < J:
-        neighbors.append([i, j + 1])
+        neighbors.append((i, j + 1))
     return neighbors
 
 
