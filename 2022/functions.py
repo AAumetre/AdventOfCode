@@ -89,3 +89,11 @@ def get_neighbor_indexes_euclidian4(point: Tuple[int, int, int, int]) -> List[Tu
                     indexes.append((point[0] + i, point[1] + j, point[2] + k, point[3] + l))
     indexes.remove((point[0], point[1], point[2], point[3]))
     return indexes
+
+
+def pass_by_val(func: Callable) -> Callable:
+    """ Wrapper to force a function to copy its arguments. """
+    def new(*args):
+        cargs = [copy.deepcopy(arg) for arg in args]
+        return func(*cargs)
+    return new
