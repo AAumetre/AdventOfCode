@@ -2,8 +2,10 @@ from functions import *
 
 Position = Tuple[int, int]
 
-class Interval1D:
-    pass
+@dataclass()
+class Interval1D:  # forward declaration... because Python
+    low_: int
+    high_: int
 
 class Interval1D:
 
@@ -48,23 +50,20 @@ class PiecewiseInterval1D:
         return len(self.pi_)
 
     def add_interval(self, new_: Interval1D) -> None:
-        """ Add an interval to the set of intervals. Updates the size. """
-        self.recursively_add_interval(new_, 0)
-
-    def recursively_add_interval(self, new_: Interval1D, index_: int) -> None:
+        """ Add an interval to the list of intervals. """
         if not self.pi_:
             self.pi_ = [new_]
             return
-        for current_index, interval in enumerate(self.pi_[index_:]):
+        for current_index, interval in enumerate(self.pi_):
             joint_is_successful, joint_interval = interval.try_joining(new_)
             if new_.is_inside(interval):
                 return # nothing to do, already covered
             elif interval.is_inside(new_):
                 del self.pi_[current_index]
-                return self.recursively_add_interval(new_, current_index)
+                return self.add_interval(new_)
             elif joint_is_successful:
                 del self.pi_[current_index] # delete the element that was joined with the new interval
-                return self.recursively_add_interval(joint_interval, current_index)
+                return self.add_interval(joint_interval)
             elif new_.is_left_of(interval): # no join possible but left of current => insert left of current_index
                 self.pi_ = self.pi_[:current_index] + [new_] + self.pi_[current_index:]
                 return
@@ -90,6 +89,15 @@ class ExclusionZone:
             side_span = self.r_-row_zone_distance
             return True, Interval1D(self.i_-side_span, self.i_+side_span)
 
+
+def analyze_row(zones_, row_: int) -> PiecewiseInterval1D:
+    row_intervals = PiecewiseInterval1D(Interval1D(-1, -1))
+    for zone in zones_:
+        reaches_zone, interval = zone.get_intersection_with_row(row_)
+        if reaches_zone:
+            row_intervals.add_interval(interval)
+    return row_intervals
+
 def main():
     logging.basicConfig(level=logging.DEBUG)
     data = read_file("data/15.in")
@@ -105,21 +113,20 @@ def main():
         r = abs(bi - si) + abs(bj - sj)
         zones.add(ExclusionZone(si, sj, r))
 
+    row_of_interest = 2_000_000
+    interval = analyze_row(zones, row_of_interest)
+    logging.info(f"There are {interval.pi_[0].high_ - interval.pi_[0].low_} positions that cannot contain a beacon on "
+                 f"row {row_of_interest}.")
 
     max_row = 4_000_000
-    beacon_col, beacon_row = 0, 0
-    for row in range(0, max_row):
-        row_intervals = PiecewiseInterval1D(Interval1D(-1, -1))
-        for zone in zones:
-            reaches_zone, interval = zone.get_intersection_with_row(row)
-            if reaches_zone:
-                row_intervals.add_interval(interval)
-        if row_intervals.get_size() == 2 and row_intervals.pi_[1].low_-row_intervals.pi_[0].high_ == 2:
-            beacon_col = row_intervals.pi_[1].low_ - 1
-            beacon_row = row
+    # Note: could have "cheated" and looked only for radius + 1 points for each sensor...
+    for row in range(max_row):
+        row_intervals = analyze_row(zones, row)
+        if row_intervals.get_size() > 1:
+            tuning_freq = 4_000_000*(row_intervals.pi_[1].low_ - 1) + row
+            logging.info(f"The tuning frequency is {tuning_freq} Hz.")
             break
-
-    logging.info(f"The tuning frequency is {4_000_000*beacon_col + beacon_row} Hz.")
+    # around 70s to run, terrible
 
 
 start_time = time.time_ns()
