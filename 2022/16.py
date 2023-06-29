@@ -57,7 +57,7 @@ def get_possible_paths(path_: Part1Path, valves_: Dict[str, Valve]) -> Set[Part1
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
-    data = read_file("data/16.in")
+    data = read_file("data/16.ex")
 
     valves = {}
     for line in data:
@@ -98,7 +98,6 @@ def main():
     timer = 1
     # contains Tuple[list(positions), set(opened valves), pressure released)
     paths: Set[Part2Path] = {("AA","AA", frozenset(), 0, "AA", "AA")}
-    finished_paths = set()
     while timer < 26:
         new_paths: Set[Part2Path] = set()
         for path in paths:
@@ -133,28 +132,18 @@ def main():
             # do the cross product between the paths or either you or the elephant
         # clean up the paths
         paths = clean_up_p2(new_paths)
-        tmp_finished = set()
-        for path in paths:
-            if len(path[2]) == n_non_zero_valves:  # all the non-zero valves have been opened
-                tmp_finished.add(path)
-        for path in tmp_finished:
-            paths.remove(path)
-            finished_paths.add((path[0], path[1], path[2], path[3] + compute_next_release(path[2], valves, 26-timer-1)))
         timer += 1
-        logging.debug(f"{timer=}, paths: {len(paths)}, finished paths: {len(finished_paths)}")
+        logging.debug(f"{timer=}, paths: {len(paths)}")
         number_of_paths = len(paths)
         if number_of_paths > 1e5:
-            paths_to_drop = sorted(paths, key=lambda x: x[3])[:number_of_paths//2]
+            paths_to_drop = sorted(paths, key=lambda x: x[3])[:int(number_of_paths/1.8)]
             for path in paths_to_drop:
                 paths.remove(path)
-            logging.debug(f"\tnew number of paths: {len(paths)}")
-    if finished_paths:
-        best_path = sorted(finished_paths, key=lambda x: x[3])[-1]
-    else:
-        best_path = sorted(paths, key=lambda x: x[2])[-1]
+            logging.debug(f"\tnew number of paths: {len(paths)}. Worst path: {paths_to_drop[0]}, best path: {paths_to_drop[-1]}")
+    best_path = sorted(paths, key=lambda x: x[3])[-1]
     logging.debug(f"The best path is {best_path}.")
     logging.info(f"The maximum pressure that can be released is {best_path[3]} bar.")
 
 start_time = time.time_ns()
 main()
-logging.info(f"Duration: {(time.time_ns() - start_time) / 10 ** 9} s")
+logging.info(f"Duration: {(time.time_ns() - start_time) / 10 ** 9 :.3f} s")
