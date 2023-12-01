@@ -3,6 +3,7 @@ from typing import Dict
 from typing import Union
 from typing import Callable
 from typing import Tuple
+from typing import Self
 from typing import Set
 import typing
 import collections
