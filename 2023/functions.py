@@ -22,6 +22,7 @@ from collections import defaultdict
 from functools import reduce
 import time
 from dataclasses import dataclass
+import operator
 
 
 def read_file(filename: str) -> List[str]:
