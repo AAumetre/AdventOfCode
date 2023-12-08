@@ -9,13 +9,23 @@ def main():
     nodes = {}
     for line in data[2:]:
         nodes[line.split(" = ")[0]] = line[:-1].split(" = (")[1].split(", ")
-    pos, steps, reached = "AAA", 0, False
-    while not reached:
+    pos, steps = "AAA", 0
+    while pos != "ZZZ":
         pos = nodes[pos][directions[steps%len(directions)]]
         steps += 1
-        if pos == "ZZZ":
-            reached = True
     logging.info(f"Part 1: {steps=}")
+
+    current_nodes = set(filter(lambda x: x.endswith("A"), nodes.keys()))
+    steps, lengths = 0, []
+    while current_nodes:
+        current_nodes = set(map(lambda x: nodes[x][directions[steps % len(directions)]], current_nodes))
+        steps += 1
+        nodes_to_remove = set(filter(lambda x: x.endswith("Z"), current_nodes))
+        if nodes_to_remove:
+            lengths.append(steps)
+            current_nodes = current_nodes.difference(nodes_to_remove)
+    steps = math.lcm(*lengths)
+    logging.info(f"Part 2: {steps=}")
 
 
 start_time = time.time_ns()
