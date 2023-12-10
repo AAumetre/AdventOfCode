@@ -51,6 +51,16 @@ def main():
                 open_paths.append(a_path.add_point(n_point))
     logging.info(f"Part 1: {len(big_loop.points_)//2=}")
 
+    # use shoelace formula to compute the polygon's surface area (https://en.wikipedia.org/wiki/Shoelace_formula)
+    loop_area = 0
+    for k, point in enumerate(big_loop.points_):
+        x_prev = big_loop.points_[k - 1].pos_[0]
+        x_next = big_loop.points_[k + 1].pos_[0] if k < len(big_loop.points_) - 1 else big_loop.points_[0].pos_[0]
+        loop_area += point.pos_[1] * (x_prev - x_next)
+    loop_area = abs(loop_area // 2)  # depending on the direction, might be negative
+    enclosed_tiles = loop_area - len(big_loop.points_) // 2 + 1
+    logging.info(f"Part 2: {enclosed_tiles=}")
+
 
 start_time = time.time_ns()
 main()
