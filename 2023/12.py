@@ -26,7 +26,7 @@ def count_record(record: str) -> List[int]:
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    data = read_file("data/12.in")
+    data = read_file("data/12.ex")
 
     sum_counts = 0
     for line in data:
@@ -36,6 +36,17 @@ def main():
         matching_records = list(filter(lambda r: count_record(r) == counts, all_records))
         sum_counts += len(matching_records)
     logging.info(f"Part 1: {sum_counts=}")
+
+    sum_counts = 0
+    for line in data[:-1]:
+        record = line.split()[0]
+        record = record + "?" + record + "?" + record + "?" + record + "?" + record
+        counts = list(map(int, line.split()[1].split(",")))*5
+        all_records = find_possible_records(record, counts)
+        matching_records = list(filter(lambda r: count_record(r) == counts, all_records))
+        sum_counts += len(matching_records)
+        print(len(matching_records))
+    logging.info(f"Part 2: {sum_counts=}")
 
 
 start_time = time.time_ns()
