@@ -37,9 +37,7 @@ def main():
     sum_h = sum(map(h, data[0].split(",")))
     logging.info(f"Part 1: {sum_h}")
 
-    boxes = []
-    for _ in range(256):
-        boxes.append([])
+    boxes = [[] for _ in range(256)]
     for inst in map(Instruction, data[0].split(",")):
         if inst.type_is_equal_:
             index = find_label_in_box(inst.label_, boxes[inst.boxid_])
